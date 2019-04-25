@@ -304,19 +304,19 @@ def main():
         elif state == 'present':
             if repository.exists(ci_id):
                 existing_ci = repository.read(ci_id)
-                if ci in existing_ci:
-                    module.exit_json(changed=False)
+                update_mode = module.params.get('update_mode')
+                if update_mode == 'replace':
+                    msg = "[REPLACE] Update %s, previous %s" % (
+                        ci, existing_ci)
+                    repository.update(ci)
                 else:
-                    update_mode = module.params.get('update_mode')
-                    if update_mode == 'replace':
-                        msg = "[REPLACE] Update %s, previous %s" % (
-                            ci, existing_ci)
-                        repository.update(ci)
+                    if ci in existing_ci:
+                        module.exit_json(changed=False)
                     else:
                         msg = "[ADD] Update %s, previous %s" % (ci,
                                                                 existing_ci)
-                        existing_ci.update_with(ci)
-                        repository.update(existing_ci)
+                    existing_ci.update_with(ci)
+                    repository.update(existing_ci)
             else:
                 msg = "Create %s" % ci
                 repository.create(ci)
